@@ -3,6 +3,7 @@ import confetti from "canvas-confetti";
 import { Link, useLocation } from "wouter";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { trpc } from "@/lib/trpc";
+import { getLocalDateString } from "@/lib/utils";
 import { OnboardingTourGuide } from "@/components/OnboardingTourGuide";
 
 // ─── Widget Config ───────────────────────────────────────────────────────────
@@ -557,7 +558,7 @@ function DailyRecs({ consumed, goal, protein, carbs, fat, proteinGoal, carbsGoal
 // ─── Hydration Widget ─────────────────────────────────────────────────────────
 const HYDRATION_GOAL = 8;
 function HydrationWidget() {
-  const storageKey = "buddymarket_hydration_" + new Date().toISOString().slice(0, 10);
+  const storageKey = "buddymarket_hydration_" + getLocalDateString();
   const [glasses, setGlasses] = useState<number>(() => {
     try { return Number(localStorage.getItem(storageKey) ?? 0); } catch { return 0; }
   });
@@ -634,7 +635,7 @@ function MacrosSummaryWidget({ consumed: _c, goal: _g, protein, carbs, fat, prot
 // ─── Weekly Goals Widget ──────────────────────────────────────────────────────
 function WeeklyGoalsWidget({ streak, consumed, goal }: { streak: number; consumed: number; goal: number }) {
   const calPct = goal > 0 ? Math.min(consumed / goal, 1) : 0;
-  const getHydration = () => { try { return Number(localStorage.getItem("buddymarket_hydration_" + new Date().toISOString().slice(0, 10)) ?? 0); } catch { return 0; } };
+  const getHydration = () => { try { return Number(localStorage.getItem("buddymarket_hydration_" + getLocalDateString()) ?? 0); } catch { return 0; } };
   const goals = [
     { label: "Calorías del día", pct: calPct, color: "#F97316", detail: `${consumed} / ${goal} kcal` },
     { label: "Racha activa", pct: Math.min(streak / 7, 1), color: "#EF4444", detail: `${streak} / 7 días` },
@@ -799,10 +800,7 @@ export default function Dashboard() {
   const { activeWidgets, toggle, moveUp, moveDown, reset } = useWidgetConfig();
   const has = (id: string) => activeWidgets.includes(id);
 
-  const [today] = useState(() => {
-    const d = new Date();
-    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
-  });
+  const [today] = useState(() => getLocalDateString());
 
   // Data
   const profileData = trpc.profile.get.useQuery();

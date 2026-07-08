@@ -89,5 +89,12 @@
     "insight2_desc": "Les utilisateurs invitent activement leurs amis",
     "insight3_title": "Opportunité d'Optimisation",
     "insight3_desc": "Envisagez d'améliorer les incitations pour les utilisateurs qui n'ont pas encore parrainé"
+  },
+  "sidebar": {
+    "terms": "CGU",
+    "privacy": "Confidentialité",
+    "cookies": "Cookies",
+    "logout": "Déconnexion",
+    "loggingOut": "Déconnexion..."
   }
 }

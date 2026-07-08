@@ -121,5 +121,12 @@
     "insight2_desc": "Gli utenti stanno attivamente invitando gli amici",
     "insight3_title": "Opportunità di Ottimizzazione",
     "insight3_desc": "Considera di migliorare gli incentivi per gli utenti che non hanno ancora fatto referenze"
+  },
+  "sidebar": {
+    "terms": "Termini",
+    "privacy": "Privacy",
+    "cookies": "Cookie",
+    "logout": "Esci",
+    "loggingOut": "Uscita..."
   }
 }

@@ -89,5 +89,12 @@
     "insight2_desc": "Benutzer laden aktiv Freunde ein",
     "insight3_title": "Optimierungsmöglichkeit",
     "insight3_desc": "Erwägen Sie, die Anreize für Benutzer zu verbessern, die noch keine Empfehlungen gegeben haben"
+  },
+  "sidebar": {
+    "terms": "AGB",
+    "privacy": "Datenschutz",
+    "cookies": "Cookies",
+    "logout": "Abmelden",
+    "loggingOut": "Abmelden..."
   }
 }

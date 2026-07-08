@@ -15,3 +15,17 @@ export function hasRole(user: { role?: string | null; secondaryRoles?: string[] 
   if (user.secondaryRoles && user.secondaryRoles.includes(roleToCheck)) return true;
   return false;
 }
+
+/**
+ * Returns today's date in YYYY-MM-DD format using the user's LOCAL timezone.
+ * Unlike new Date().toISOString().slice(0,10) which uses UTC,
+ * this function correctly handles midnight crossovers in the user's timezone.
+ * @param date Optional date to format (defaults to now)
+ */
+export function getLocalDateString(date?: Date): string {
+  const d = date ?? new Date();
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}

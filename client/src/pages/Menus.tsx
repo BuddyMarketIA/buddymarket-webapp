@@ -3,6 +3,7 @@ import { DndContext, DragOverlay, useDraggable, useDroppable, type DragEndEvent 
 import { useTranslation } from "react-i18next";
 import { trpc } from "@/lib/trpc";
 import { getErrorMessage } from "@/lib/errorUtils";
+import { getLocalDateString } from "@/lib/utils";
 import MenuPreviewModal from "@/components/MenuPreviewModal";
 import { toast } from "@/components/sonner-a11y-shim";
 import { Link, useLocation } from "wouter";
@@ -353,13 +354,13 @@ function ActiveMenuTab({ editMenuId }: { editMenuId?: number }) {
   const [showAddRecipe, setShowAddRecipe] = useState<{ dayPartId: number; mealType: string } | null>(null);
   const [recipeSearch, setRecipeSearch]   = useState("");
   const [showApplyModal, setShowApplyModal] = useState(false);
-  const [applyStartDate, setApplyStartDate] = useState(() => new Date().toISOString().split("T")[0]);
+  const [applyStartDate, setApplyStartDate] = useState(() => getLocalDateString());
   const [confirmingMeals, setConfirmingMeals] = useState<Set<string>>(new Set());
   const [confirmedMeals, setConfirmedMeals] = useState<Set<string>>(new Set());
 
   const baseDate   = useMemo(() => { const d = new Date(); d.setDate(d.getDate() + weekOffset * 7); return d; }, [weekOffset]);
   const weekDates  = useMemo(() => getWeekDates(baseDate), [baseDate]);
-  const selectedDateStr = selectedDate.toISOString().split("T")[0];
+  const selectedDateStr = getLocalDateString(selectedDate);
 
   const { data: menus }    = trpc.menus.list.useQuery();
   const activeMenu         = useMemo(() => menus?.find((m: any) => m.isActive) ?? null, [menus]);
@@ -497,7 +498,7 @@ function ActiveMenuTab({ editMenuId }: { editMenuId?: number }) {
                   </div>
                 </div>
                 <button
-                  onClick={() => { setShowApplyModal(true); setApplyStartDate(new Date().toISOString().split("T")[0]); }}
+                  onClick={() => { setShowApplyModal(true); setApplyStartDate(getLocalDateString()); }}
                   className="shrink-0 flex items-center gap-1.5 rounded-xl bg-[#F97316] px-3 py-1.5 text-xs font-bold text-white"
                 >
                   <CalendarDaysIcon className="h-3.5 w-3.5" />
@@ -518,7 +519,7 @@ function ActiveMenuTab({ editMenuId }: { editMenuId?: number }) {
                 </div>
               </div>
               <button
-                onClick={() => { setShowApplyModal(true); setApplyStartDate(new Date().toISOString().split("T")[0]); }}
+                onClick={() => { setShowApplyModal(true); setApplyStartDate(getLocalDateString()); }}
                 className="shrink-0 flex items-center gap-1.5 rounded-xl bg-[#F97316] px-3 py-1.5 text-xs font-bold text-white"
               >
                 <CalendarDaysIcon className="h-3.5 w-3.5" />
@@ -545,9 +546,9 @@ function ActiveMenuTab({ editMenuId }: { editMenuId?: number }) {
       {/* Day selector */}
       <div className="mb-5 grid grid-cols-7 gap-1">
         {weekDates.map(date => {
-          const ds       = date.toISOString().split("T")[0];
+          const ds       = getLocalDateString(date);
           const isSel    = ds === selectedDateStr;
-          const isToday  = ds === new Date().toISOString().split("T")[0];
+          const isToday  = ds === getLocalDateString();
           return (
             <button key={ds} onClick={() => setSelectedDate(date)}
               className={`flex flex-col items-center rounded-xl px-1 py-2 transition-all ${isSel ? "bg-[#F97316] text-white shadow-sm" : "bg-muted/50 text-muted-foreground hover:bg-muted"}`}>
@@ -766,7 +767,7 @@ function SavedMenusTab() {
   const [generating, setGenerating]     = useState(false);
   const [renaming, setRenaming]         = useState<{ id: number; name: string } | null>(null);
   const [applyModal, setApplyModal]     = useState<{ id: number; name: string } | null>(null);
-  const [applyStartDate, setApplyStartDate] = useState(() => new Date().toISOString().split("T")[0]);
+  const [applyStartDate, setApplyStartDate] = useState(() => getLocalDateString());
   const [previewMenuId, setPreviewMenuId] = useState<number | null>(null);
 
   const { data: menus, refetch } = trpc.menus.list.useQuery();
@@ -837,7 +838,7 @@ function SavedMenusTab() {
               menu={menu}
               isOwned
               onActivate={() => setActive.mutate({ menuId: menu.id })}
-              onApply={() => { setApplyModal({ id: menu.id, name: menu.name }); setApplyStartDate(new Date().toISOString().split("T")[0]); }}
+              onApply={() => { setApplyModal({ id: menu.id, name: menu.name }); setApplyStartDate(getLocalDateString()); }}
               onRename={() => setRenaming({ id: menu.id, name: menu.name })}
               onDuplicate={() => duplicateMenu.mutate({ id: menu.id })}
               onDelete={() => { if (confirm(`¿Eliminar "${menu.name}"?`)) deleteMenu.mutate({ id: menu.id }); }}
@@ -862,11 +863,11 @@ function SavedMenusTab() {
             <h3 className="mb-1 text-lg font-bold text-foreground">Nuevo menú</h3>
             <p className="mb-4 text-xs text-muted-foreground">Dale un nombre a tu planificador semanal</p>
             <input value={menuName} onChange={e => setMenuName(e.target.value)}
-              onKeyDown={e => { if (e.key === "Enter") { const today = new Date().toISOString().split("T")[0]; const nextWeek = new Date(Date.now() + 7 * 86400000).toISOString().split("T")[0]; createMenu.mutate({ name: menuName || "Mi menú", startDate: today, endDate: nextWeek }); } }}
+              onKeyDown={e => { if (e.key === "Enter") { const today = getLocalDateString(); const nextWeek = getLocalDateString(new Date(Date.now() + 7 * 86400000)); createMenu.mutate({ name: menuName || "Mi menú", startDate: today, endDate: nextWeek }); } }}
               placeholder="Ej: Semana saludable, Dieta mediterránea..." className="vively-input mb-4" autoFocus />
             <div className="flex gap-3">
               <button onClick={() => setShowNewMenu(false)} className="flex-1 rounded-2xl border border-border py-3 text-sm font-semibold text-muted-foreground">Cancelar</button>
-              <button onClick={() => { const today = new Date().toISOString().split("T")[0]; const nextWeek = new Date(Date.now() + 7 * 86400000).toISOString().split("T")[0]; createMenu.mutate({ name: menuName || "Mi menú", startDate: today, endDate: nextWeek }); }}
+              <button onClick={() => { const today = getLocalDateString(); const nextWeek = getLocalDateString(new Date(Date.now() + 7 * 86400000)); createMenu.mutate({ name: menuName || "Mi menú", startDate: today, endDate: nextWeek }); }}
                 disabled={createMenu.isPending} className="flex-1 btn-vively">
                 {createMenu.isPending ? "Creando..." : "Crear"}
               </button>

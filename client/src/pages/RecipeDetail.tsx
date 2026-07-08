@@ -4,7 +4,7 @@ import { useAuth } from "@/_core/hooks/useAuth";
 import ShareRecipeButton from "@/components/ShareRecipeButton";
 import { Link, useLocation, useParams } from "wouter";
 import { toast } from "@/components/sonner-a11y-shim";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { RECIPE_PLACEHOLDER_IMAGE } from "@/lib/constants";
 import { useRecipeAllergyCheck } from "@/hooks/useRecipeAllergyCheck";
 import {
@@ -285,6 +285,51 @@ export default function RecipeDetail() {
 
   const isOwner = user?.id === recipe.userId;
   const totalTime = (recipe.preparationTime || 0) + (recipe.cookTime || 0);
+
+  // ── Open Graph meta tags for WhatsApp / social sharing ──
+  useEffect(() => {
+    if (!recipe) return;
+    const prevTitle = document.title;
+    const siteName = "BuddyMarket - Gestor Nutricional";
+    const recipeTitle = `${recipe.name} | ${siteName}`;
+    const recipeDesc = recipe.description ||
+      `Receta con ${recipe.caloriesPerServing ? Math.round(recipe.caloriesPerServing) + ' kcal' : 'información nutricional'} por ración. Descubre más en BuddyMarket.`;
+    const recipeImage = recipe.imageUrl || "";
+    const recipeUrl = window.location.href;
+
+    // Update document title
+    document.title = recipeTitle;
+
+    // Helper to set or create meta tag
+    const setMeta = (property: string, content: string, attr = "property") => {
+      let el = document.querySelector(`meta[${attr}="${property}"]`) as HTMLMetaElement | null;
+      if (!el) {
+        el = document.createElement("meta");
+        el.setAttribute(attr, property);
+        document.head.appendChild(el);
+      }
+      el.content = content;
+    };
+
+    // Open Graph
+    setMeta("og:type", "article");
+    setMeta("og:title", recipeTitle);
+    setMeta("og:description", recipeDesc);
+    setMeta("og:url", recipeUrl);
+    setMeta("og:site_name", siteName);
+    if (recipeImage) setMeta("og:image", recipeImage);
+
+    // Twitter Card
+    setMeta("twitter:card", "summary_large_image", "name");
+    setMeta("twitter:title", recipeTitle, "name");
+    setMeta("twitter:description", recipeDesc, "name");
+    if (recipeImage) setMeta("twitter:image", recipeImage, "name");
+
+    return () => {
+      // Restore on unmount
+      document.title = prevTitle;
+    };
+  }, [recipe]);
 
   const nutrition = {
     calories: recipe.caloriesPerServing ? Math.round(recipe.caloriesPerServing * ratio) : null,

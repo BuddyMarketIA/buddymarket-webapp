@@ -726,6 +726,47 @@ export default function Profile() {
             </button>
           </div>
 
+          {/* ── SECCIÓN LEGAL ── */}
+          <div style={card}>
+            <SectionTitle>Legal y privacidad</SectionTitle>
+            <a
+              href="/terms"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%", padding: "12px 0", textDecoration: "none", borderBottom: "1px solid #f3f4f6", fontSize: "15px", color: "#374151" }}
+            >
+              <span style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                <span style={{ fontSize: "20px" }}>📄</span>
+                <span>Términos y condiciones</span>
+              </span>
+              <span style={{ color: "#9ca3af", fontSize: "18px" }}>›</span>
+            </a>
+            <a
+              href="/privacy"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%", padding: "12px 0", textDecoration: "none", borderBottom: "1px solid #f3f4f6", fontSize: "15px", color: "#374151" }}
+            >
+              <span style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                <span style={{ fontSize: "20px" }}>🔒</span>
+                <span>Política de privacidad</span>
+              </span>
+              <span style={{ color: "#9ca3af", fontSize: "18px" }}>›</span>
+            </a>
+            <a
+              href="/cookies"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%", padding: "12px 0", textDecoration: "none", fontSize: "15px", color: "#374151" }}
+            >
+              <span style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                <span style={{ fontSize: "20px" }}>🍪</span>
+                <span>Política de cookies</span>
+              </span>
+              <span style={{ color: "#9ca3af", fontSize: "18px" }}>›</span>
+            </a>
+          </div>
+
           <DeleteAccountSection />
         </div>
       )}

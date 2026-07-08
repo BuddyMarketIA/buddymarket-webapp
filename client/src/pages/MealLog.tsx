@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { toast } from "@/components/sonner-a11y-shim";
+import { getLocalDateString } from "@/lib/utils";
 import { usePlan } from "@/hooks/usePlan";
 import { UpgradeGate } from "@/components/UpgradeGate";
 import BarcodeScanner from "@/components/BarcodeScanner";
@@ -295,7 +296,7 @@ export default function MealLog() {
   const selectedDate = useMemo(() => {
     const d = new Date();
     d.setDate(d.getDate() + dateOffset);
-    return d.toISOString().split("T")[0];
+    return getLocalDateString(d);
   }, [dateOffset]);
 
   const [showDailyAnalysis, setShowDailyAnalysis] = useState(false);

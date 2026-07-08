@@ -28,6 +28,7 @@ import { OnboardingModal } from "@/components/OnboardingModal";
 import OfflineIndicator from "@/components/OfflineIndicator";
 import FeedbackButton from "@/components/FeedbackButton";
 import { useBadgeNotifications } from "@/components/BadgeUnlockedToast";
+import MedicalDisclaimerBanner from "@/components/MedicalDisclaimerBanner";
 
 // ─── Hook: detecta si estamos en desktop (≥1024px) ───────────────────────────
 function useIsDesktop() {
@@ -761,6 +762,8 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
       <div className="app-layout-root" style={{ display: "flex", minHeight: "100dvh" }}>
         {/* Onboarding modal — self-contained, decides internally whether to show */}
         {user && <OnboardingModal />}
+        {/* Medical disclaimer — shows once per session */}
+        {user && <MedicalDisclaimerBanner />}
         {/* Skip to main */}
         <a href="#main-content" style={{ position: "absolute", top: "-100px", left: "16px", zIndex: 9999, padding: "8px 16px", background: "#F97316", color: "white", borderRadius: "8px", fontWeight: 700, fontSize: "14px", textDecoration: "none" }}
           onFocus={(e) => { e.currentTarget.style.top = "16px"; }}
@@ -881,6 +884,8 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
     <ExpertModeContext.Provider value={expertModeValue}><div className="app-layout-root" style={{ width: "100%", maxWidth: "480px", margin: "0 auto", minHeight: "100dvh", position: "relative" }}>
       {/* Onboarding modal — self-contained, decides internally whether to show */}
       {user && <OnboardingModal />}
+      {/* Medical disclaimer — shows once per session */}
+      {user && <MedicalDisclaimerBanner />}
       <OfflineIndicator />
       <a href="#main-content" style={{ position: "fixed", top: "-200px", left: "16px", zIndex: 9999, padding: "8px 16px", background: "#F97316", color: "white", borderRadius: "8px", fontWeight: 700, fontSize: "14px", textDecoration: "none", clip: "rect(0,0,0,0)", overflow: "hidden" }}
         onFocus={(e) => { e.currentTarget.style.top = "16px"; e.currentTarget.style.clip = "auto"; e.currentTarget.style.overflow = "visible"; }}

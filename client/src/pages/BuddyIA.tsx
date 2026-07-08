@@ -2,6 +2,7 @@ import { useState, useCallback, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { trpc } from "@/lib/trpc";
 import { toast } from "@/components/sonner-a11y-shim";
+import { getLocalDateString } from "@/lib/utils";
 import { usePlan } from "@/hooks/usePlan";
 import { UpgradeGate } from "@/components/UpgradeGate";
 import { Button } from "@/components/ui/button";
@@ -1239,7 +1240,7 @@ function MenuResultView({
   const [saved, setSaved] = useState(false);
   const [savedMenuId, setSavedMenuId] = useState<number | null>(null);
   const [creatingList, setCreatingList] = useState(false);
-  const [applyDate, setApplyDate] = useState(() => questionnaireData.startDate || new Date().toISOString().split("T")[0]);
+  const [applyDate, setApplyDate] = useState(() => questionnaireData.startDate || getLocalDateString());
   const [applying, setApplying] = useState(false);
   const [showSaveModal, setShowSaveModal] = useState(false);
   const utils = trpc.useUtils();

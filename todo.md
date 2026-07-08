@@ -1508,7 +1508,7 @@
 - [x] Detección automática del idioma del navegador en primera visita — i18next-browser-languagedetector 8.2.1 instalado y configurado
 - [x] Selector de idioma en sección dedicada del sidebar — LanguageSelector variant="icon" en AppLayout.tsx línea 322
 - [x] Selector de idioma en la landing page (navbar y/o footer) — LanguageSelector en navbar (línea 224) y footer (línea 598) de Home.tsx
-- [ ] Modal de bienvenida en primera visita para confirmar/cambiar idioma detectado
+- [x] Modal de bienvenida en primera visita para confirmar/cambiar idioma detectado
 
 ## Auditoría de Producción — P0 Fixes
 - [ ] Configurar variables de entorno Apple IAP (APPLE_IAP_KEY_ID, APPLE_IAP_ISSUER_ID, APPLE_IAP_PRIVATE_KEY, APPLE_BUNDLE_ID, APPLE_SHARED_SECRET)
@@ -1544,7 +1544,7 @@
 - [ ] Actualizar página Terms.tsx con el nuevo contenido legal
 - [ ] Checkbox de aceptación de TyC en registro/onboarding con timestamp en BD
 - [ ] Panel de aceptaciones de TyC en Admin (quién aceptó, cuándo, versión)
-- [ ] Hipervínculos a TyC en footer de landing y dentro de la app
+- [x] Hipervínculos a TyC en footer de landing y dentro de la app
 - [ ] Sección de preferencias de cookies en Profile.tsx con switches individuales y botón de guardar
 
 ## Sistema TyC — Completado (sprint actual)
@@ -1571,7 +1571,7 @@
 - [x] Procedimiento tRPC `badges.getCatalog` — catálogo completo con estado (ganada/bloqueada) para el usuario (ya implementado)
 - [x] Procedimiento tRPC `badges.getLeaderboard` — ranking de usuarios por puntos de insignias (ya implementado)
 - [x] Página `/app/badges` con perfil de insignias del usuario, progreso y leaderboard (ya implementado en Badges.tsx)
-- [ ] Componente `BadgeUnlockedToast` — toast especial animado al ganar una insignia
+- [x] Componente `BadgeUnlockedToast` — toast especial animado al ganar una insignia
 - [x] Panel admin con estadísticas de insignias más ganadas y ranking de usuarios (ya implementado en badges.getAdminStats)
 - [x] Ruta `/app/badges` registrada en App.tsx (ya implementado) - PENDIENTE: enlace en sidebar
 - [x] Corregir secuencia banners: cookies primero, idioma después (no simultáneos)
@@ -1595,17 +1595,17 @@
 - [ ] targetSdk Android actualizado a 35
 - [ ] Firebase google-services.json para push Android
 - [ ] Keystore de firma Android generado y configurado en Codemagic
-- [ ] Disclaimer médico en primera pantalla post-login
+- [x] Disclaimer médico en primera pantalla post-login
 - [ ] Data Safety metadata para Google Play
 - [ ] Build de producción ejecutado y cap sync actualizado
 
 - [ ] Eliminar formulario duplicado de datos en primer plano al registrarse
-- [ ] Onboarding solo se pide una vez (no repetir si ya completado)
-- [ ] Menú inicial no obligatorio (skip sin bloqueo)
+- [x] Onboarding solo se pide una vez (no repetir si ya completado) — OnboardingModal.tsx línea 54 verifica !profileData.user?.onboardingCompleted; BuddySetup línea 258 salta si ya completo
+- [x] Menú inicial no obligatorio (skip sin bloqueo) — implementado con botón Saltar en BuddySetup
 
-- [ ] Eliminar OnboardingModal duplicado (reemplazado por BuddySetup)
-- [ ] BuddySetup pre-rellena datos ya guardados en BD (género, objetivo, físicos)
-- [ ] Menú inicial no obligatorio en BuddySetup
+- [x] Eliminar OnboardingModal duplicado (reemplazado por BuddySetup) — OnboardingModal redirige a /buddy-setup; no se duplica
+- [x] BuddySetup pre-rellena datos ya guardados en BD (género, objetivo, físicos) — BuddySetup.tsx línea 231-273 carga existingProfile y pre-rellena todos los campos
+- [x] Menú inicial no obligatorio en BuddySetup — BuddySetup tiene botón "Saltar" en el paso de menú inicial
 - [ ] Datos de perfil unificados en una sola fuente de verdad (BD)
 
 - [x] CRÍTICO: Alergias/restricciones no se respetan en recetas y menús generados por IA — añadido buildForbiddenIngredientsBlock a recipes.generateWithAI (menús ya lo tenía)
@@ -1635,7 +1635,7 @@
 - [ ] Menús para eventos: nueva sección (cumpleaños, cena romántica, barbacoa, Navidad, etc.) - 1 gratis, resto Pro/ProMax
 - [ ] Mis Menús: sección con menús pasados, opción de repetir o borrar
 - [ ] Mis Listas de la Compra: sección con listas pasadas, opción de repetir o borrar
-- [ ] Open Graph meta tags dinámicos en RecipeDetail para compartir con imagen BuddyMarket y mensaje personalizado en WhatsApp
+- [x] Open Graph meta tags dinámicos en RecipeDetail para compartir con imagen BuddyMarket y mensaje personalizado en WhatsApp
 
 ## Sprint Abril 2026 - Completado
 
@@ -1753,7 +1753,7 @@
 - [ ] Frontend: botón "Continuar con Apple" en LandingPage
 - [ ] Verificar flujo completo en dev
 - [x] Dashboard: mostrar foto de perfil del usuario en el saludo (en lugar de la inicial cuando hay foto subida)
-- [ ] Dashboard/Diario: corregir zona horaria — la fecha del día debe calcularse en hora local del usuario, no UTC, para que el diario resetee correctamente al pasar medianoche
+- [x] Dashboard/Diario: corregir zona horaria — la fecha del día debe calcularse en hora local del usuario, no UTC, para que el diario resetee correctamente al pasar medianoche
 - [x] Perfil: reorganizar secciones eliminando preguntas duplicadas (alergias, frecuencia de deporte, etc. deben aparecer solo una vez) y estructurar en bloques lógicos: Datos personales, Objetivos y salud, Actividad física, Preferencias alimentarias
 - [x] Menús IA: corregir distribución por días (no meter todo en un día), eliminar duplicados de comidas, mejorar UI de visualización del menú generado
 - [ ] Dashboard: quitar sección de 4 tarjetas grandes redundantes (Lista compra, BuddyExperts, Recordatorios, Logros) → reemplazar por widget de progreso semanal
@@ -1762,7 +1762,7 @@
 - [ ] Dashboard: rediseñar sección Comunidad (BuddyIA como asesor, BuddyCoach como app de deporte del grupo)
 - [ ] BuddyScan: redirigir a escáner real (código de barras + foto de plato), no a Menús
 - [x] MenuResultView: función de reemplazo de comida por alternativa IA — endpoint tRPC buddyIA.replaceMeal + UI con botón "Cambiar" en cada tarjeta expandida + modal bottom-sheet con preview de la alternativa, botón aceptar/generar otra/cancelar
-- [ ] BuddyIA Chat: personalizar el sistema prompt con el perfil completo del usuario (peso, altura, edad, objetivo, alergias, restricciones dietéticas, historial médico, actividad física) para que las respuestas sean específicas al usuario y no genéricas
+- [x] BuddyIA Chat: personalizar el sistema prompt con el perfil completo del usuario (peso, altura, edad, objetivo, alergias, restricciones dietéticas, historial médico, actividad física) para que las respuestas sean específicas al usuario y no genéricas
 - [ ] Traducciones: auditar y completar todas las traducciones faltantes en la app (muchos textos hardcodeados en español no usan t() y no se traducen al cambiar de idioma)
 - [x] Perfil: mover sección "Actividad Física" del tab Alimentación al tab "Salud y objetivos"
 - [ ] Menú IA: rediseñar cuestionario con preguntas interactivas paso a paso (días, variedad, facilidad, personas, etc.)
