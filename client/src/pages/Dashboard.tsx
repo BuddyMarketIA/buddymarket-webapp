@@ -446,7 +446,7 @@ function StreakWidget({ streak, level, levelName }: { streak: number; level: num
 // ─── Recommendations ──────────────────────────────────────────────────────────
 function RecommendationsList({ recipes }: { recipes: any[] }) {
   const [currentIdx, setCurrentIdx] = useState(0);
-  const trackInteraction = trpc.recommendations.trackInteraction.useMutation();
+  const trackInteraction = trpc.recommendations.trackEvent.useMutation();
 
   // Auto-rotate every 4 seconds
   useEffect(() => {
@@ -788,10 +788,10 @@ export default function Dashboard() {
   const [showMealModal, setShowMealModal] = useState(false);
   const [showWidgetConfig, setShowWidgetConfig] = useState(false);
   // Onboarding tour
-  const onboardingStatus = trpc.profileSetup.getOnboardingStatus.useQuery();
+  const onboardingStatus = trpc.profileSetup.getStatus.useQuery();
   const [showTour, setShowTour] = useState(false);
   useEffect(() => {
-    if (onboardingStatus.data && !onboardingStatus.data.tourCompleted) {
+    if (onboardingStatus.data && !(onboardingStatus.data as any)?.onboarding?.tourCompleted) {
       const t = setTimeout(() => setShowTour(true), 900);
       return () => clearTimeout(t);
     }
@@ -821,10 +821,10 @@ export default function Dashboard() {
 
   // Confetti when macros goal is reached
   const confettiFiredRef = useRef(false);
-  const proteinGoal = profile?.proteinGoal ?? 150;
-  const carbsGoal   = profile?.carbsGoal   ?? 250;
-  const fatGoal     = profile?.fatGoal     ?? 65;
-  const goalCal0    = profile?.dailyCalorieGoal ?? 2000;
+  const proteinGoal = (profile as any)?.proteinGoal ?? 150;
+  const carbsGoal   = (profile as any)?.carbsGoal   ?? 250;
+  const fatGoal     = (profile as any)?.fatGoal     ?? 65;
+  const goalCal0    = (profile as any)?.dailyCalorieGoal ?? 2000;
   const protein0    = (summary as any)?.protein ?? 0;
   const carbs0      = (summary as any)?.carbs   ?? 0;
   const fat0        = (summary as any)?.fat     ?? 0;
@@ -837,7 +837,7 @@ export default function Dashboard() {
     }
     if (!macrosComplete) confettiFiredRef.current = false;
   }, [macrosComplete, dailySummary.isFetched]);
-  const goalCal = profile?.dailyCalorieGoal ?? 2000;
+  const goalCal = (profile as any)?.dailyCalorieGoal ?? 2000;
   const consumed = (summary as any)?.calories ?? (summary as any)?.totalCalories ?? 0;
   const streak = streakData.data?.currentStreak ?? 0;
   const lvl = levelInfo.data;
@@ -1018,8 +1018,8 @@ export default function Dashboard() {
             {has("streak") && (
               <StreakWidget
                 streak={streak}
-                level={lvl?.level ?? 1}
-                levelName={lvl?.levelName ?? "Principiante"}
+                level={(lvl?.currentLevel as any)?.id ?? 1}
+                levelName={(lvl?.currentLevel as any)?.name ?? "Principiante"}
               />
             )}
 

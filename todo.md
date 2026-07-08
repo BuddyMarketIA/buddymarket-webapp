@@ -1616,7 +1616,7 @@
 - [ ] Bug: lista de la compra desde menú da 404 - corregir ruta/endpoint
 - [ ] Bug: filtros de recetas muestran nombres internos de BD (mealTime, cuisineType, cookingMethod)
 - [ ] Bug: opciones de filtro de recetas salen en inglés (breakfast, midMorning) en lugar del idioma seleccionado
-- [ ] Bug: botones "Ver menú / Usar menú / carrito" descentrados en cards de biblioteca de menús
+- [x] Bug: botones "Ver menú / Usar menú / carrito" descentrados en cards de biblioteca de menús
 
 ### Estrategia de monetización (hacer como app de 500M)
 - [ ] Rediseñar página de planes con diferencias brutalmente claras entre Free/Pro/Pro Max
@@ -1695,7 +1695,7 @@
 - [x] FEAT-02: Open Graph dinámico implementado en server/og.ts - detecta bots y devuelve meta tags con imagen de receta o logo BuddyMarket
 - [x] BUG-09: Strings en inglés corregidos (Snack→Merienda, Breakfast→Desayuno, etc.) en múltiples archivos
 - [x] FEAT-03: Formulario de recetas ya tiene ingredientes con cantidades y cálculo nutricional automático con IA (calculateNutrition)
-- [ ] BUG-10: Botones de menús no están bien centrados - pendiente de identificar ubicación exacta del problema
+- [x] BUG-10: Botones de menús no están bien centrados - pendiente de identificar ubicación exacta del problema
 - [x] FEAT-04: Mis Menús y Mis Listas de la Compra ya tienen opción de repetir y borrar (implementado en sprint anterior)
 - [x] BUG-11: Error 404 corregido en ActiveMenu.tsx - validación de shoppingListId>0, manejo de listas vacías, fallback a /app/shopping-lists
 

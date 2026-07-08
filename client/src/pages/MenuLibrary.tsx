@@ -461,15 +461,15 @@ function MenuCard({
                 </span>
               )}
             </div>
-            <div className="flex gap-2">
-              <Button variant="outline" size="sm" className="text-xs h-9 flex-1" onClick={() => onDetail(menu.id)}>
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm" className="text-xs h-9 flex-1 min-w-0" onClick={() => onDetail(menu.id)}>
                 Ver menú
               </Button>
               {user ? (
                 <>
                   <Button
                     size="sm"
-                    className="text-xs h-9 flex-1 bg-[#FF6B35] hover:bg-[#e55a25] text-white"
+                    className="text-xs h-9 flex-1 min-w-0 bg-[#FF6B35] hover:bg-[#e55a25] text-white"
                     onClick={() => onSave({ id: menu.id, name: menu.name })}
                   >
                     Usar menú
@@ -478,7 +478,7 @@ function MenuCard({
                     <Button
                       variant="outline"
                       size="sm"
-                      className="h-9 w-9 shrink-0 p-0 border-border hover:border-[#FF6B35] hover:text-[#FF6B35]"
+                      className="h-9 w-9 shrink-0 p-0 border-border hover:border-[#FF6B35] hover:text-[#FF6B35] flex items-center justify-center"
                       title="Generar lista de la compra"
                       onClick={() => onShoppingList({ id: menu.id, name: menu.name })}
                     >
@@ -487,7 +487,7 @@ function MenuCard({
                   )}
                 </>
               ) : (
-                <Link href="/login">
+                <Link href="/login" className="flex-1 min-w-0">
                   <Button size="sm" className="text-xs h-9 w-full bg-[#FF6B35] hover:bg-[#e55a25] text-white">
                     Usar menú
                   </Button>

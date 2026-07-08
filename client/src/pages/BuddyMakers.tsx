@@ -289,7 +289,7 @@ export default function BuddyMakers() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F7F3EF]">
+    <div className="min-h-screen bg-background">
       {/* Header */}
       <div className="bg-background/90 backdrop-blur-xl border-b border-border/50/80 px-4 pt-4 pb-3 sticky top-0 z-10">
         <div className="flex items-center justify-between mb-3">

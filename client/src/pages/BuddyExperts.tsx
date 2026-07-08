@@ -152,7 +152,7 @@ function ExpertCard({
       {/* ── Body ── */}
       <div className="pt-14 px-4 pb-4 flex flex-col items-center text-center gap-1 flex-1">
         <h3 className="font-black text-foreground text-[15px] leading-tight line-clamp-1 w-full tracking-tight">
-          {expert.displayName}
+          {expert.displayName || row.user?.name || row.user?.email?.split('@')[0] || 'Nutricionista'}
         </h3>
         <p className="text-[11px] text-indigo-500 font-bold line-clamp-1 tracking-widest uppercase w-full">
           {expert.specialty ?? CATEGORY_LABELS[expert.category] ?? t("buddyExperts.nutritionist", "Nutricionista")}
@@ -292,7 +292,7 @@ export default function BuddyExperts() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F7F3EF]">
+    <div className="min-h-screen bg-background">
       {/* Header */}
       <div className="bg-background/80 backdrop-blur-xl border-b border-border/50/80 px-4 pt-4 pb-3 sticky top-0 z-10">
         <div className="flex items-center justify-between mb-3">
